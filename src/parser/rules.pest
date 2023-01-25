@@ -1,0 +1,42 @@
+WS = _{ " " }
+integer = @{ ASCII_DIGIT+ }
+var_name = @{(ASCII_ALPHANUMERIC|"_")+}
+unary_minus = { "-" }
+unary_plus = { "+" }
+log_not = {"!"}
+bitcompl = {"~"}
+bexpr = _{"(" ~ WS*? ~ expr ~ WS*? ~ ")"}
+primary = _{ integer | method_call | fcall | var_name  | bexpr  }
+unary_op = _{unary_minus | unary_plus | log_not | bitcompl}
+atom = _{ unary_op? ~ WS*? ~ primary }
+
+bin_op = _{ add | subtract | multiply | divide | modulo  | pow | bitand | bitor | bitxor | bitlshift | bitrshift | log_and | log_or | eq | neq | gt | gte | lt | lte }
+	add = { "+" }
+	subtract = { "-" }
+	multiply = { "*" }
+	divide = { "/" }
+	modulo = { "%" }
+    pow = {"**"}
+    bitand = {"&"}
+    bitor = {"|"}
+    bitxor = {"^"}
+    bitlshift = {"<<"}
+    bitrshift = {">>"}
+    log_and = {"&&"}
+    log_or = {"||"}
+    eq = {"=="}
+    neq = {"!="}
+    gt = {">"}
+    gte = {">="}
+    lt = {"<"}
+    lte = {"<="}
+
+//method_call = { var_name ~ "." ~ var_name ~ "(" ~ expr ~ ")" }
+//fcall = { var_name ~ "(" ~ expr ~ ")"}
+method_call = { (var_name | bexpr) ~ "." ~ var_name ~ "(" ~ WS*? ~ (expr ~ (","~WS*?~expr)*)? ~ WS*?~  ")" }
+fcall = { var_name ~ "(" ~WS*? ~   (expr ~ (","~ WS*? ~expr)*)? ~ WS*? ~ ")"}
+
+expr = { atom ~ WS*? ~ (WS*? ~ bin_op ~ WS*? ~ atom)* }
+
+// We can't have SOI and EOI on expr directly, because it is used recursively (e.g. with parentheses)
+equation = _{ SOI ~ expr ~ EOI }
